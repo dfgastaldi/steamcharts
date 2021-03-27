@@ -19,17 +19,59 @@ rm(list = c("paquetes"))
 # Load data----------------------------------------------------------------
 dataset <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-16/games.csv')
 
+# Set global variables for inputs------------------------------------------
+
+v_min_year <- min(dataset$year, na.rm = TRUE)
+v_max_year <- max(dataset$year, na.rm = TRUE)
+
+v_min_avg <- min(dataset$avg, na.rm = TRUE)
+v_max_avg <- max(dataset$avg, na.rm = TRUE)
+
+v_min_gain <- min(dataset$gain, na.rm = TRUE)
+v_max_gain <- max(dataset$gain, na.rm = TRUE)
+
+v_min_peak <- min(dataset$peak, na.rm = TRUE)
+v_max_peak <- max(dataset$peak, na.rm = TRUE)
+
+
 # UI ----------------------------------------------------------------------
 ui <- fluidPage(
   titlePanel("SteamCharts"),
   theme = bslib::bs_theme(bootswatch = "darkly"),
   sidebarLayout(
     sidebarPanel(
-      sliderInput(inputId = "range",
-                  label = "Year range:",
-                  min = 2012, 
-                  max = 2021,
-                  value = c(2012,2021),
+      sliderInput(inputId = "rangeyear",
+                  label = "year range:",
+                  min = v_min_year, 
+                  max = v_max_year,
+                  value = c(v_min_year,v_max_year),
+                  round = TRUE,
+                  ticks = FALSE,
+                  sep = ""
+      ),
+      sliderInput(inputId = "rangeavg",
+                  label = "avg range:",
+                  min = v_min_avg, 
+                  max = v_max_avg,
+                  value = c(v_min_avg,v_max_avg),
+                  round = TRUE,
+                  ticks = FALSE,
+                  sep = ""
+      ),
+      sliderInput(inputId = "rangegain",
+                  label = "gain range:",
+                  min = v_min_gain, 
+                  max = v_max_gain,
+                  value = c(v_min_gain,v_max_gain),
+                  round = TRUE,
+                  ticks = FALSE,
+                  sep = ""
+      ),
+      sliderInput(inputId = "rangepeak",
+                  label = "peak range:",
+                  min = v_min_peak, 
+                  max = v_max_peak,
+                  value = c(v_min_peak,v_max_peak),
                   round = TRUE,
                   ticks = FALSE,
                   sep = ""
@@ -66,8 +108,14 @@ server <- function(input, output, session) {
   reactiveDf <- reactive({return(
     dataset %>%
       filter(
-        year >= input$range[1],
-        year <= input$range[2]
+        year >= input$rangeyear[1], 
+        year<= input$rangeyear[2],
+        avg >= input$rangeavg[1],
+        avg <= input$rangeavg[2],
+        gain >= input$rangegain[1],
+        gain <= input$rangegain[2],
+        peak >= input$rangepeak[1],
+        peak <= input$rangepeak[2]
       )
   )})
   

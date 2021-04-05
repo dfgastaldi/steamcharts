@@ -3,7 +3,7 @@
 paquetes <- list(
   "Shiny Core" = list("shiny", "bs4Dash"),
   "Shiny Extras" = list("shinyWidgets","dashboardthemes"),
-  "Plotting" = list("ggplot2"),
+  "Plotting" = list("ggplot2","plotly"),
   "Tidyverse" = list("tidyverse", "glue"),
   "Generales" = list("readr")
 )
@@ -92,8 +92,8 @@ ui <- fluidPage(
       tabsetPanel(id = "tabcard",
                   side = "left",
                   tabPanel(tabName = "Dashboard",
-                           plotOutput("plot_by_year", width = "400px"),
-                           dataTableOutput("datatable")
+                           plotlyOutput("plot_by_year", width = "400px"),
+                           DTOutput('tbl')
                   )
                   
       )
@@ -105,7 +105,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   thematic::thematic_shiny()
   
-  reactiveDf <- reactive({return(
+  reactiveDf <- reactive({
     dataset %>%
       filter(
         year >= input$rangeyear[1], 
@@ -116,15 +116,19 @@ server <- function(input, output, session) {
         gain <= input$rangegain[2],
         peak >= input$rangepeak[1],
         peak <= input$rangepeak[2]
-      )
   )})
   
-  output$datatable <- renderDataTable(reactiveDf(), options = list(pageLength = 10))
+   output$tbl <- renderDT(
+    reactiveDf(), filter = 'top', options = list(
+      pageLength = 10, autoWidth = TRUE
+    )
+  )
   
-  output$plot_by_year <- renderPlot({
+  output$plot_by_year <- renderPlotly({
+        ggplotly(
     ggplot(reactiveDf()) +
       aes(x = year) +
-      geom_bar(fill = "#85f979")
+      geom_bar(fill = "#85f979"))
   })
   
   output$time <- renderText({
